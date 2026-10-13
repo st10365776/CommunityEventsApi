@@ -2,14 +2,14 @@ using System.Text.Json;
 using CommunityEventsApi.Api.Endpoints;
 using CommunityEventsApi.Api.Services;
 using Microsoft.AspNetCore.Diagnostics;
-using Scalar.AspNetCore;
 
 const string CorsPolicyName = "AllowAll";
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
 
@@ -33,8 +33,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference(); // Browsable Scalar UI at /scalar/v1, reading the /openapi/v1.json document.
+    app.UseSwagger(); // Raw OpenAPI/Swagger JSON at /swagger/v1/swagger.json.
+    app.UseSwaggerUI(); // Browsable Swagger UI at /swagger.
 }
 
 // Global exception handling: return a clean JSON error body instead of the dev exception page.

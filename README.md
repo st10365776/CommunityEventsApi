@@ -38,14 +38,14 @@ All endpoints below use the HTTP base URL for simplicity:
 http://localhost:5178
 ```
 
-## API Documentation (Scalar / OpenAPI)
+## API Documentation (Swagger)
 
-When running in the `Development` environment, an interactive, browsable API reference is available via [Scalar](https://scalar.com/), backed by the built-in .NET OpenAPI document:
+When running in the `Development` environment, an interactive, browsable API reference is available via [Swashbuckle](https://github.com/domaindrivendev/Swashbuckle.AspNetCore):
 
-- Scalar UI: `http://localhost:5178/scalar/v1`
-- Raw OpenAPI JSON: `http://localhost:5178/openapi/v1.json`
+- Swagger UI: `http://localhost:5178/swagger`
+- Raw OpenAPI/Swagger JSON: `http://localhost:5178/swagger/v1/swagger.json`
 
-Rider runs the `https` launch profile in Development by default, so these are also reachable at `https://localhost:7215/scalar/v1`.
+Rider runs the `https` launch profile in Development by default, so these are also reachable at `https://localhost:7215/swagger`.
 
 ## API Endpoints
 
