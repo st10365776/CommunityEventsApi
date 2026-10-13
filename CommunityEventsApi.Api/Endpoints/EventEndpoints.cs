@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CommunityEventsApi.Api.Models;
 using CommunityEventsApi.Api.Services;
 
@@ -8,7 +9,9 @@ namespace CommunityEventsApi.Api.Endpoints;
 /// </summary>
 public static class EventEndpoints
 {
-    private static readonly DateTime ProcessStartTimeUtc = DateTime.UtcNow;
+    // Use the actual OS process start time rather than a static field, which can
+    // initialize later than the process itself and yield a near-zero/negative uptime.
+    private static readonly DateTime ProcessStartTimeUtc = Process.GetCurrentProcess().StartTime.ToUniversalTime();
 
     public static void MapEventEndpoints(this WebApplication app)
     {
