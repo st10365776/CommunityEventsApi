@@ -6,6 +6,7 @@ namespace CommunityEventsApi.Api.Services;
 /// <summary>
 /// Thread-safe in-memory implementation of <see cref="IEventStore"/> backed by a
 /// <see cref="ConcurrentDictionary{TKey,TValue}"/>, seeded with sample events on construction.
+/// Used as a local-development fallback when Firestore credentials are not configured.
 /// </summary>
 public class InMemoryEventStore : IEventStore
 {
@@ -16,19 +17,22 @@ public class InMemoryEventStore : IEventStore
         Seed();
     }
 
-    public IReadOnlyList<Event> GetAll() =>
-        _events.Values.OrderBy(e => e.Date, StringComparer.Ordinal).ToList();
-
-    public Event? GetById(string id) =>
-        _events.TryGetValue(id, out var ev) ? ev : null;
-
-    public Event Add(Event newEvent)
+    public Task<IReadOnlyList<Event>> GetAllAsync()
     {
-        _events[newEvent.Id] = newEvent;
-        return newEvent;
+        IReadOnlyList<Event> result = _events.Values.OrderBy(e => e.Date, StringComparer.Ordinal).ToList();
+        return Task.FromResult(result);
     }
 
-    public bool Delete(string id) => _events.TryRemove(id, out _);
+    public Task<Event?> GetByIdAsync(string id) =>
+        Task.FromResult(_events.TryGetValue(id, out var ev) ? ev : null);
+
+    public Task<Event> AddAsync(Event newEvent)
+    {
+        _events[newEvent.Id] = newEvent;
+        return Task.FromResult(newEvent);
+    }
+
+    public Task<bool> DeleteAsync(string id) => Task.FromResult(_events.TryRemove(id, out _));
 
     private void Seed()
     {

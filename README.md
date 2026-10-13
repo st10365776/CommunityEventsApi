@@ -1,7 +1,9 @@
 # Community Events API
 
 A simple, production-ready REST API server for a Community Events mobile application,
-built with ASP.NET Core Minimal APIs and an in-memory data store (no external database).
+built with ASP.NET Core Minimal APIs. Event data is read from/written to the **same
+Cloud Firestore `events` collection the Android app uses** (project `communityevents-e3552`),
+with an in-memory store as a local-dev fallback when Firestore credentials aren't configured.
 
 ## Prerequisites
 
@@ -11,6 +13,28 @@ built with ASP.NET Core Minimal APIs and an in-memory data store (no external da
   dotnet --list-sdks
   ```
 - (Optional) [JetBrains Rider](https://www.jetbrains.com/rider/) for the IDE experience.
+
+## Firestore setup (required for real data)
+
+The API reads/writes the `events` collection in the `communityevents-e3552` Firebase project.
+Without credentials, it silently falls back to an in-memory store seeded with 3 sample events
+(handy for local development, but it won't see real Firestore data).
+
+To connect to real Firestore data:
+
+1. In the [Firebase console](https://console.firebase.google.com/) for the `communityevents-e3552`
+   project, go to **Project settings → Service accounts → Generate new private key**. This
+   downloads a service account JSON key.
+2. Save it as `CommunityEventsApi.Api/firebase-service-account.json` (already excluded from git
+   via `.gitignore` — never commit this file).
+   - Alternatively, set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the full
+     path of the key file instead of placing it in the project folder.
+3. Restart the API. On startup it logs either:
+   - `[Startup] Using Firestore event store (project 'communityevents-e3552').`, or
+   - `[Startup] Firestore is not configured ... falling back to the in-memory event store.`
+
+The Firestore project id and credentials file name/path are configured in
+`CommunityEventsApi.Api/appsettings.json` under the `Firestore` section.
 
 ## Opening in JetBrains Rider
 
@@ -154,9 +178,11 @@ curl http://localhost:5178/api/health
 ```
 CommunityEventsApi.sln
 CommunityEventsApi.Api/
-  Program.cs                 # Slim startup: DI, CORS, JSON options, middleware, endpoint mapping
-  Models/Event.cs             # Event + CreateEventRequest models
-  Services/IEventStore.cs     # Store abstraction
-  Services/InMemoryEventStore.cs  # Thread-safe in-memory store, seeded with sample data
-  Endpoints/EventEndpoints.cs # Route mappings for /api/events and /api/health
+  Program.cs                      # Slim startup: DI, CORS, JSON options, middleware, Swagger, endpoint mapping
+  Models/Event.cs                  # Event + CreateEventRequest models
+  Services/IEventStore.cs          # Store abstraction (async)
+  Services/FirestoreEventStore.cs  # Reads/writes the Firestore "events" collection
+  Services/InMemoryEventStore.cs   # Thread-safe in-memory fallback store, seeded with sample data
+  Endpoints/EventEndpoints.cs      # Route mappings for /api/events and /api/health
+  firebase-service-account.json   # (you add this, gitignored) Firestore service account key
 ```

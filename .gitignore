@@ -24,3 +24,7 @@ Thumbs.db
 
 ## Environment
 .env
+
+## Firebase/Firestore service account credentials — never commit these
+**/firebase-service-account*.json
+**/*-service-account.json

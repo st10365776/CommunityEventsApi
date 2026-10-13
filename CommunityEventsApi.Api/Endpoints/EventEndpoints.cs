@@ -17,18 +17,18 @@ public static class EventEndpoints
     {
         var group = app.MapGroup("/api");
 
-        group.MapGet("/events", (IEventStore store) =>
-            Results.Ok(store.GetAll()));
+        group.MapGet("/events", async (IEventStore store) =>
+            Results.Ok(await store.GetAllAsync()));
 
-        group.MapGet("/events/{id}", (string id, IEventStore store) =>
+        group.MapGet("/events/{id}", async (string id, IEventStore store) =>
         {
-            var ev = store.GetById(id);
+            var ev = await store.GetByIdAsync(id);
             return ev is null
                 ? Results.NotFound(new { error = "Event not found" })
                 : Results.Ok(ev);
         });
 
-        group.MapPost("/events", (CreateEventRequest request, IEventStore store) =>
+        group.MapPost("/events", async (CreateEventRequest request, IEventStore store) =>
         {
             if (string.IsNullOrWhiteSpace(request.Title) ||
                 string.IsNullOrWhiteSpace(request.Date) ||
@@ -55,14 +55,14 @@ public static class EventEndpoints
                 CreatedAt = DateTime.UtcNow.ToString("o")
             };
 
-            store.Add(newEvent);
+            await store.AddAsync(newEvent);
 
             return Results.Created($"/api/events/{newEvent.Id}", newEvent);
         });
 
-        group.MapDelete("/events/{id}", (string id, IEventStore store) =>
+        group.MapDelete("/events/{id}", async (string id, IEventStore store) =>
         {
-            return store.Delete(id)
+            return await store.DeleteAsync(id)
                 ? Results.Ok(new { message = "Event deleted successfully" })
                 : Results.NotFound(new { error = "Event not found" });
         });

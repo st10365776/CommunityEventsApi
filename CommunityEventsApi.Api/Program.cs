@@ -1,6 +1,8 @@
 using System.Text.Json;
 using CommunityEventsApi.Api.Endpoints;
 using CommunityEventsApi.Api.Services;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Diagnostics;
 
 const string CorsPolicyName = "AllowAll";
@@ -11,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
+RegisterEventStore(builder);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -60,3 +62,42 @@ app.UseCors(CorsPolicyName);
 app.MapEventEndpoints();
 
 app.Run();
+
+// Registers IEventStore as a Firestore-backed store when a project id + service account
+// credentials are configured; otherwise falls back to the in-memory store so the API still
+// runs locally without any Google Cloud setup.
+static void RegisterEventStore(WebApplicationBuilder builder)
+{
+    var projectId = builder.Configuration["Firestore:ProjectId"];
+    var credentialsPath = builder.Configuration["Firestore:CredentialsPath"];
+
+    var resolvedCredentialsPath = !string.IsNullOrWhiteSpace(credentialsPath)
+        ? Path.Combine(builder.Environment.ContentRootPath, credentialsPath)
+        : null;
+
+    var hasCredentialsFile = resolvedCredentialsPath is not null && File.Exists(resolvedCredentialsPath);
+    var hasAdcEnvVar = !string.IsNullOrWhiteSpace(
+        Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS"));
+
+    if (string.IsNullOrWhiteSpace(projectId) || !(hasCredentialsFile || hasAdcEnvVar))
+    {
+        Console.WriteLine(
+            "[Startup] Firestore is not configured (missing ProjectId or credentials) — " +
+            "falling back to the in-memory event store.");
+        builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
+        return;
+    }
+
+    Console.WriteLine($"[Startup] Using Firestore event store (project '{projectId}').");
+
+    var firestoreDb = new FirestoreDbBuilder
+    {
+        ProjectId = projectId,
+        GoogleCredential = hasCredentialsFile
+            ? CredentialFactory.FromFile<ServiceAccountCredential>(resolvedCredentialsPath).ToGoogleCredential()
+            : null
+    }.Build();
+
+    builder.Services.AddSingleton(firestoreDb);
+    builder.Services.AddSingleton<IEventStore, FirestoreEventStore>();
+}

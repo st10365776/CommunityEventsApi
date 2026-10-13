@@ -7,8 +7,8 @@ namespace CommunityEventsApi.Api.Services;
 /// </summary>
 public interface IEventStore
 {
-    IReadOnlyList<Event> GetAll();
-    Event? GetById(string id);
-    Event Add(Event newEvent);
-    bool Delete(string id);
+    Task<IReadOnlyList<Event>> GetAllAsync();
+    Task<Event?> GetByIdAsync(string id);
+    Task<Event> AddAsync(Event newEvent);
+    Task<bool> DeleteAsync(string id);
 }
