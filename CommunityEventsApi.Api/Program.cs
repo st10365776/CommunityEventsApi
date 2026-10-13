@@ -2,6 +2,7 @@ using System.Text.Json;
 using CommunityEventsApi.Api.Endpoints;
 using CommunityEventsApi.Api.Services;
 using Microsoft.AspNetCore.Diagnostics;
+using Scalar.AspNetCore;
 
 const string CorsPolicyName = "AllowAll";
 
@@ -33,6 +34,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(); // Browsable Scalar UI at /scalar/v1, reading the /openapi/v1.json document.
 }
 
 // Global exception handling: return a clean JSON error body instead of the dev exception page.

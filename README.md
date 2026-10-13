@@ -38,6 +38,15 @@ All endpoints below use the HTTP base URL for simplicity:
 http://localhost:5178
 ```
 
+## API Documentation (Scalar / OpenAPI)
+
+When running in the `Development` environment, an interactive, browsable API reference is available via [Scalar](https://scalar.com/), backed by the built-in .NET OpenAPI document:
+
+- Scalar UI: `http://localhost:5178/scalar/v1`
+- Raw OpenAPI JSON: `http://localhost:5178/openapi/v1.json`
+
+Rider runs the `https` launch profile in Development by default, so these are also reachable at `https://localhost:7215/scalar/v1`.
+
 ## API Endpoints
 
 All endpoints are under `/api`.
