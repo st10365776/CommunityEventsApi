@@ -8,6 +8,8 @@ namespace CommunityEventsApi.Api.Endpoints;
 /// </summary>
 public static class EventEndpoints
 {
+    private static readonly DateTime ProcessStartTimeUtc = DateTime.UtcNow;
+
     public static void MapEventEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api");
@@ -64,7 +66,7 @@ public static class EventEndpoints
 
         group.MapGet("/health", () =>
         {
-            var uptimeSeconds = Environment.TickCount64 / 1000.0;
+            var uptimeSeconds = (DateTime.UtcNow - ProcessStartTimeUtc).TotalSeconds;
             return Results.Ok(new { status = "OK", uptime = uptimeSeconds });
         });
     }
